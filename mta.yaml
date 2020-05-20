@@ -1,0 +1,76 @@
+ID: mta_demoProject
+_schema-version: '2.1'
+parameters:
+  deploy_mode: html5-repo
+version: 0.0.1
+modules:
+  - name: mta-demoproject-approuter
+    type: approuter.nodejs
+    path: mta-demoproject-approuter
+    parameters:
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: mta_demoProject_html5_repo_runtime
+      - name: uaa_mta_demoProject
+      - name: portal_resources_mta_demoProject
+  - name: mta_demoProject_ui_deployer
+    type: com.sap.html5.application-content
+    path: mta_demoProject_ui_deployer
+    requires:
+      - name: mta_demoProject_html5_repo_host
+    build-parameters:
+      requires:
+        - name: demoProject
+          artifacts:
+            - './*'
+          target-path: resources/demoProject
+  - name: demoProject
+    type: html5
+    path: demoProject
+    build-parameters:
+      builder: custom
+      commands:
+        - npm install
+        - npm run build
+      supported-platforms: []
+      build-result: dist
+  - name: FLP
+    type: com.sap.portal.content
+    path: FLP
+    parameters:
+      stack: cflinuxfs3
+      memory: 128M
+      buildpack: 'https://github.com/cloudfoundry/nodejs-buildpack/releases/download/v1.6.39/nodejs-buildpack-cflinuxfs3-v1.6.39.zip'
+    requires:
+      - name: portal_resources_mta_demoProject
+      - name: uaa_mta_demoProject
+      - name: mta_demoProject_html5_repo_host
+      - name: mta_demoProject_ui_deployer
+resources:
+  - name: mta_demoProject_html5_repo_runtime
+    parameters:
+      service-plan: app-runtime
+      service: html5-apps-repo
+    type: org.cloudfoundry.managed-service
+  - name: mta_demoProject_html5_repo_host
+    parameters:
+      service-plan: app-host
+      service: html5-apps-repo
+    type: org.cloudfoundry.managed-service
+  - name: uaa_mta_demoProject
+    parameters:
+      path: ./xs-security.json
+      service-plan: application
+      service: xsuaa
+    type: org.cloudfoundry.managed-service
+  - name: dest_mta_demoProject
+    parameters:
+      service-plan: lite
+      service: destination
+    type: org.cloudfoundry.managed-service
+  - name: portal_resources_mta_demoProject
+    parameters:
+      service-plan: standard
+      service: portal
+    type: org.cloudfoundry.managed-service

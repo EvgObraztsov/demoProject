@@ -18,3 +18,4 @@ APIExternalProducer.js
 preview.json
 cp.project.properties.json
 /demoProject/node_modules/
+package-lock.json
